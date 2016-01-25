@@ -16,11 +16,7 @@
 metadata {
 	definition (name: "EnerTalk Energy Meter", namespace: "Encored Technologies", author: "hyeon seok yang") {
 	}
-
-	simulator {
-		// TODO: define status and reply messages here
-	}
-
+    
 	tiles(scale:2) {
     	valueTile("view", "device.view", decoration: "flat") {
        		state "view", label:' ${currentValue} kWh'
