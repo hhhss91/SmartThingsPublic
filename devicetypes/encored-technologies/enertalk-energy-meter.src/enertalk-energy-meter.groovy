@@ -14,24 +14,25 @@
  *
  */
 metadata {
-	definition (name: "EnerTalk Energy Meter", namespace: "Encored Technologies", author: "hyeon seok yang") {
-	}
+	definition (name: "EnerTalk Energy Meter", 
+    			namespace: "Encored Technologies", 
+    			author: "hyeon seok yang") {}
     
 	tiles(scale:2) {
-    	valueTile("view", "device.view", decoration: "flat") {
-       		state "view", label:' ${currentValue} kWh'
+    	valueTile("view", "device.view", decoration: "flat", canChangeIcon : true, canChangeBackground : false) {
+       		state "view", label:' ${currentValue} kWh', icon:"https://s3-ap-northeast-1.amazonaws.com/smartthings-images/appicon_enertalk%401.png"
 		}
-		valueTile("month", "device.month", width: 6, height : 3, decoration: "flat") {
-       		state "month", label:' ${currentValue}'
+		valueTile("month", "device.month", width: 6, height : 3, decoration: "flat", canChangeIcon : true, canChangeBackground : false) {
+       		state "month", label:' ${currentValue}', icon:"https://s3-ap-northeast-1.amazonaws.com/smartthings-images/appicon_enertalk%401.png"
 		}
-        valueTile("real", "device.real", width: 2, height : 2, decoration: "flat") {
-       		state "real", label:' ${currentValue}'
+        valueTile("real", "device.real", width: 2, height : 2, decoration: "flat", canChangeIcon : true, canChangeBackground : false) {
+       		state "real", label:' ${currentValue}', icon:"https://s3-ap-northeast-1.amazonaws.com/smartthings-images/appicon_enertalk%401.png"
 		}
-        valueTile("tier", "device.tier", width: 2, height : 2, decoration: "flat") {
-       		state "tier", label:' ${currentValue}'
+        valueTile("tier", "device.tier", width: 2, height : 2, decoration: "flat", canChangeIcon : true, canChangeBackground : false) {
+       		state "tier", label:' ${currentValue}', icon:"https://s3-ap-northeast-1.amazonaws.com/smartthings-images/appicon_enertalk%401.png"
 		}
-        valueTile("plan", "device.plan", width: 2, height : 2, decoration: "flat") {
-       		state "plan", label:' ${currentValue}'
+        valueTile("plan", "device.plan", width: 2, height : 2, decoration: "flat", canChangeIcon : true, canChangeBackground : false) {
+       		state "plan", label:' ${currentValue}', icon:"https://s3-ap-northeast-1.amazonaws.com/smartthings-images/appicon_enertalk%401.png"
 		}
         
         htmlTile(name:"deepLink", action:"linkApp", whitelist:["code.jquery.com", 

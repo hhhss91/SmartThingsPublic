@@ -331,7 +331,8 @@ def initialize() {
         log.warn "Device already created"
     }
     
-    setSummary()    
+    setSummary()
+    runEvery5Minutes(getHtml)
 }
 
 def setSummary() {
@@ -386,8 +387,6 @@ private getUUID() {
                                    [Authorization: "Bearer ${atomicState.encoredAccessToken}", ContentType: "application/json"])
 
     def deviceUUID = getHttpGetJson(uuidParams, 'UUID')
-    
-    log.debug "uuid uuid uuid uuid : ${deviceUUID}"
 
     if (!deviceUUID) {
     	return false
@@ -822,16 +821,16 @@ def getHtml() {
     /* If token has been verified or refreshed and if uuid exist, call other apis */
 
     if (!atomicState.notPaired) {
-    	log.debug atomicState.notPaired
 
         if(EATValidation) {
-        	log.debug EATValidation
-        	http://api-test.encoredtech.com/1.2/devices/F5A00F80-6961-11E5-87F0-8D074725C866/summary
-            def summaryApiParam = makeGetParams( "http://api-test.encoredtech.com/1.2/devices/${atomicState.uuid}/summary",
+        
+            def summaryApiParam = makeGetParams( "http://api.encoredtech.com/1.2/devices/${atomicState.uuid}/summary",
                                                     [Authorization: "Bearer ${atomicState.encoredAccessToken}", ContentType: "application/json"])
                                                     
             def summary = getHttpGetJson(summaryApiParam, 'CheckSummary')
-  
+            
+            log.debug "summary is ${summary}"
+  		
             deviceStatusData = summary.status
             
             standbyData = summary.standbyPower
@@ -878,8 +877,8 @@ def getHtml() {
             */	
             if (meteringData) {
                 if (meteringData.meteringPeriodBill) {
-                    meteringPeriodBill = meteringData.meteringPeriodBill
-                    plan = maxLimitUsageBill - meteringData.meteringPeriodBill
+                    meteringPeriodBill = Math.round(meteringData.meteringPeriodBill)
+                    plan = Math.round(maxLimitUsageBill) - Math.round(meteringData.meteringPeriodBill)
                     start = meteringData.meteringStart
                     end = meteringData.meteringEnd
                     meteringDay = meteringData.meteringDay
@@ -903,9 +902,6 @@ def getHtml() {
             }
 
             /* if the start value exist, get last month energy usage. */
-            
-           	log.debug start
-            log.debug end
             if (start) {
                 lastMonth = summary.lastMonth
 
@@ -917,9 +913,9 @@ def getHtml() {
             def kWhMonth = Math.round(meteringUsage / 10000) / 100 /* milliwatt to kilowatt*/
             def planUsed = 0
             if ( maxLimitUsage > 0 ) {
-                planUsed = Math.round((meteringUsage / maxLimitUsage) * 100) /* get the pecent of used amount against max usage */
+                planUsed = Math.round((meteringUsage / maxLimitUsage) * 10000) / 100 /* get the pecent of used amount against max usage */
             } else {
-                planUsed = Math.round((meteringUsage/ 1000000) * 100) /* if max was not decided let the used value be percent. e.g. 1kWh = 100% */
+                planUsed = Math.round((meteringUsage/ 1000000) * 10000) / 100 /* if max was not decided let the used value be percent. e.g. 1kWh = 100% */
             }
            
            def realTimeInfo = summary.realtimeUsage
@@ -927,7 +923,7 @@ def getHtml() {
             if (!realTimeInfo.activePower) {
                 realTimeInfo = 0
             } else {
-                realTimeInfo = Math.round(realTimeInfo.activePower / 1000 )
+                realTimeInfo = Math.round(realTimeInfo.activePower / 10 ) / 100
             }
 			
             
@@ -966,6 +962,7 @@ def getHtml() {
 
         if (meteringPeriodBill) {
             /* reform the value of the bill with the , separator */
+            log.debug " metering Bill ${meteringPeriodBill}"
             meteringPeriodBillShow = formatMoney("${meteringPeriodBill}")
             meteringPeriodBillFalse = ""
             thisMonthUnitOne = "&#x20A9;"
@@ -983,6 +980,7 @@ def getHtml() {
         }
 
         if (plan) {
+        	log.debug "plan is ${plan}"
             planShow = plan
             if (plan >= 1000) {planShow = formatMoney("${plan}") }
             planFalse = ""
@@ -998,7 +996,7 @@ def getHtml() {
 
         /*set the showing units for html.*/
         if (lastMonth.usages) {
-            lastMonthShow = formatMoney("${lastMonth.usages[0].meteringPeriodBill}")
+            lastMonthShow = formatMoney("${Math.round(lastMonth.usages[0].meteringPeriodBill)}")
             lastMonthFalse = ""
             lastMonthUnit = "&#x20A9;"
        
@@ -1033,6 +1031,8 @@ def getHtml() {
            deviceId	      : deviceId,
            pairing		  : true
         ]
+        log.debug atomicState.solutionModuleSettings
+        log.debug "meteringBill ${meteringPeriodBillShow} plan ${planShow} lastMonth ${lastMonthShow}"
         
         htmlBody = """
          <div id="real-time">
